@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import sukunaGif from '../assets/sukuna-gif-1.gif'
+import SEO from '../components/SEO'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -64,6 +65,11 @@ function AboutImage({ src, rotate }: { src: string; rotate: string }) {
 export default function AboutPage() {
   return (
     <>
+      <SEO
+        title="About — Shelby Salonga"
+        description="Creative Developer & Designer based in Manila, PH. I build precise, beautiful digital experiences at the intersection of design and code, specializing in React, TypeScript, and Node.js."
+        url="https://rojanns.vercel.app/about"
+      />
       {/* Noise overlay */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
@@ -110,7 +116,7 @@ export default function AboutPage() {
                 'I code side projects.',
                 'I explore design trends.',
                 'I play video games.',
-                'I take photos.',
+                'I train like goku to be the GOAT of vibe coding.',
               ].map(line => (
                 <p key={line} className="sr" style={{
                   fontFamily: 'var(--font-display)',

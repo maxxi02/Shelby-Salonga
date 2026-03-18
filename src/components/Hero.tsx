@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import SEO from './SEO'
 
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null)
@@ -15,6 +16,7 @@ export default function Hero() {
 
   return (
     <>
+      <SEO />
       <style>{`
         .hero-inner {
           display: grid;

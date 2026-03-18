@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import SEO from './SEO'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -167,6 +168,11 @@ export default function Works() {
 
   return (
     <>
+      <SEO
+        title="Works — Shelby Salonga"
+        description="A curated selection of projects spanning brand identity, web development, editorial design, and interactive digital experiences."
+        url="https://rojanns.vercel.app/works"
+      />
       <style>{`
         #works { border-top: 1px solid var(--border); }
 
