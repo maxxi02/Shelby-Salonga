@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import sukunaGif from '../assets/sukuna-gif-1.gif'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -81,11 +82,7 @@ export default function AboutPage() {
             <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
               I am also passionate about open source and helping other developers build better products.
             </p>
-            <img
-              src="/src/assets/sukuna-gif-1.gif"
-              alt="sukuna"
-              style={{ width: '100%', display: 'block' }}
-            />
+            <img src={sukunaGif} alt="sukuna" style={{ width: '100%', display: 'block' }} />
           </div>
 
           {/* Right — image → label → text */}
