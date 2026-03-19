@@ -15,28 +15,11 @@ const TURNSTILE_SITE_KEY = import.meta.env.DEV
 
 const projects: Project[] = [
   {
-    num: '01', title: 'INGENUE', year: '2024',
-    tags: 'FASHION · EDITORIAL · BRANDING',
-    desc: 'Complete brand system for a luxury fashion label. Logo, typography, color, and motion guidelines crafted for a modern editorial aesthetic.',
-    img: 'https://picsum.photos/800/600?random=1',
-  },
-  {
-    num: '02', title: 'SONY', year: '2024',
-    tags: 'REACT · TYPESCRIPT · MOTION',
-    desc: 'Immersive scroll-driven web experience for a global electronics brand. Minimal dark aesthetic with precision-engineered micro-interactions.',
-    img: 'https://picsum.photos/800/600?random=2',
-  },
-  {
-    num: '03', title: 'THE IRISH TIMES', year: '2023',
-    tags: 'EDITORIAL · PRINT · DIGITAL',
-    desc: 'Art direction and layout design for a leading newspaper. Bridging print tradition with digital-first reading experiences.',
-    img: 'https://picsum.photos/800/600?random=3',
-  },
-  {
-    num: '04', title: 'EMPIRE', year: '2023',
-    tags: 'ARCHITECTURE · IDENTITY · WAYFINDING',
-    desc: 'Visual identity and environmental graphics for a landmark architectural development. Bold typographic system applied across all touchpoints.',
-    img: 'https://picsum.photos/800/600?random=4',
+    num: '01', title: 'SWEET & GRAIN', year: '2025',
+    tags: 'REACT · VITE · TAILWIND · GSAP · LENIS',
+    desc: 'Full artisan bakery landing page — editorial layout with scroll-driven GSAP animations, Lenis smooth scroll, real food photography, and a warm cream/terracotta design system.',
+    img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80',
+    link: 'https://github.com/maxxi02/sample-project--1-sweetgrain',
   },
 ]
 
@@ -222,7 +205,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         <p style={{ fontSize: '13px', lineHeight: 1.85, opacity: 0.65, marginBottom: '2rem', maxWidth: '420px' }}>
           {project.desc}
         </p>
-        <button className="view-btn">View Project →</button>
+        <a href={project.link ?? '#'} target="_blank" rel="noopener noreferrer" className="view-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>View Project →</a>
       </div>
     </div>
   )
@@ -336,9 +319,20 @@ export default function Works() {
             }}>
               MY WORKS
             </h2>
-            <span className="section-label">[ 04 PROJECTS ]</span>
+            <span className="section-label">[ 01 PROJECT ]</span>
           </div>
-          {projects.map((p, i) => <ProjectRow key={p.num} project={p} index={i} />)}
+          <div style={{ maxWidth: '860px' }}>
+            {projects.map((p, i) => <ProjectRow key={p.num} project={p} index={i} />)}
+          </div>
+          <p style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '11px',
+            letterSpacing: '0.15em',
+            opacity: 0.35,
+            paddingTop: '2rem',
+            paddingBottom: '6rem',
+            textTransform: 'uppercase',
+          }}>More projects coming soon.</p>
         </div>
       </section>
     </>
