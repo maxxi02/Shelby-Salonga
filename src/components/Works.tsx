@@ -1,11 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import SEO from './SEO'
+import type { Project } from '../types'
+import { Turnstile } from '@marsidev/react-turnstile'
+import { getReactions, getComments, incrementReaction, postComment } from '../lib/api'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const projects = [
+const TURNSTILE_SITE_KEY = import.meta.env.DEV
+  ? '1x00000000000000000000AA'
+  : import.meta.env.VITE_TURNSTILE_SITE_KEY
+
+const projects: Project[] = [
   {
     num: '01', title: 'INGENUE', year: '2024',
     tags: 'FASHION · EDITORIAL · BRANDING',
@@ -32,7 +40,7 @@ const projects = [
   },
 ]
 
-function ProjectRow({ project, index }: { project: typeof projects[0]; index: number }) {
+function ProjectRow({ project, index }: { project: Project; index: number }) {
   const rowRef = useRef<HTMLDivElement>(null)
   const imgRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
@@ -53,15 +61,52 @@ function ProjectRow({ project, index }: { project: typeof projects[0]; index: nu
   }, [isReverse])
 
   const [open, setOpen] = useState(false)
+  const [hasReacted, setHasReacted] = useState(false)
+  const [fireCount, setFireCount] = useState<number | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [turnstileError, setTurnstileError] = useState(false)
+  const [commentText, setCommentText] = useState('')
   const commentsRef = useRef<HTMLDivElement>(null)
-  const fireCounts = [24, 18, 11, 9]
-  const commentCounts = [3, 2, 3, 2]
-  const sampleComments = [
-    { time: '2 days ago', text: 'Really clean work on this one.' },
-    { time: '5 days ago', text: 'Love the direction here.' },
-    { time: '1 week ago', text: "The typography system is chef's kiss." },
-  ].slice(0, commentCounts[index] ?? 2)
 
+  const { data: reactionsData } = useQuery({
+    queryKey: ['reactions', project.num],
+    queryFn: () => getReactions(project.num),
+  })
+
+  const { data: commentsData } = useQuery({
+    queryKey: ['comments', project.num],
+    queryFn: () => getComments(project.num),
+  })
+
+  useEffect(() => {
+    if (reactionsData?.fire_count !== undefined) setFireCount(reactionsData.fire_count)
+    if (reactionsData?.has_reacted !== undefined) setHasReacted(reactionsData.has_reacted)
+  }, [reactionsData])
+
+  const handleReact = async () => {
+    if (hasReacted) return
+    const data = await incrementReaction(project.num)
+    if (data.fire_count !== undefined) setFireCount(data.fire_count)
+    if (!data.already_reacted) setHasReacted(true)
+  }
+
+  const queryClient = useQueryClient()
+
+  const handleCommentSubmit = async () => {
+    if (!token) return
+    if (!commentText.trim()) return
+    try {
+      await postComment(project.num, commentText, token)
+      queryClient.invalidateQueries({ queryKey: ['comments', project.num] })
+      setCommentText('')
+      setToken(null)
+    } catch (err) {
+      console.error('[Comment] API error:', err)
+    }
+  }
+
+  const comments: { created_at: string; text: string }[] = commentsData ?? []
+  const commentCount = commentsData ? comments.length : null
   const toggleComments = () => {
     if (!commentsRef.current) return
     if (!open) {
@@ -93,12 +138,18 @@ function ProjectRow({ project, index }: { project: typeof projects[0]; index: nu
         <div style={{ borderTop: '1px solid var(--border)', marginTop: '1rem' }} />
         {/* Reaction row */}
         <div style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 0' }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.45, transition: 'opacity 0.2s', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '0.45')}
+          <button
+            onClick={handleReact}
+            disabled={hasReacted}
+            style={{ background: 'none', border: 'none', cursor: hasReacted ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
           >
-            <span style={{ fontSize: '1rem' }}>🔥</span>
-            <span style={{ fontSize: '10px', letterSpacing: '0.12em' }}>{fireCounts[index] ?? 7}</span>
+            <span style={{
+              fontSize: '1rem',
+              opacity: hasReacted ? 1 : 0.45,
+              filter: hasReacted ? 'drop-shadow(0 0 4px orange)' : 'none',
+              transition: 'all 0.3s ease',
+            }}>🔥</span>
+            <span style={{ fontSize: '10px', letterSpacing: '0.12em', opacity: hasReacted ? 1 : 0.45, transition: 'opacity 0.3s ease' }}>{fireCount ?? '...'}</span>
           </button>
           <button onClick={toggleComments} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: open ? 1 : 0.45, transition: 'opacity 0.2s', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
             onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
@@ -107,15 +158,15 @@ function ProjectRow({ project, index }: { project: typeof projects[0]; index: nu
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            <span style={{ fontSize: '10px', letterSpacing: '0.12em' }}>{commentCounts[index] ?? 2}</span>
+            <span style={{ fontSize: '10px', letterSpacing: '0.12em' }}>{commentCount ?? '...'}</span>
           </button>
         </div>
         {/* Collapsible comments */}
         <div ref={commentsRef} style={{ display: 'none', flexDirection: 'column', gap: '0.75rem', paddingBottom: '1rem', overflow: 'hidden' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {sampleComments.map(({ time, text }, i) => (
+            {comments.map(({ created_at, text }, i) => (
               <div key={i} style={{ padding: '0.75rem 0', borderTop: '1px solid var(--border)' }}>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.4, marginBottom: '0.3rem' }}>{time}</p>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.4, marginBottom: '0.3rem' }}>{new Date(created_at).toLocaleDateString()}</p>
                 <p style={{ fontSize: '13px', lineHeight: 1.8, opacity: 0.7 }}>{text}</p>
               </div>
             ))}
@@ -124,6 +175,8 @@ function ProjectRow({ project, index }: { project: typeof projects[0]; index: nu
           <textarea
             placeholder="Leave an anonymous comment..."
             rows={2}
+            value={commentText}
+            onChange={e => setCommentText(e.target.value)}
             style={{
               width: '100%', background: 'transparent',
               border: 'none', borderBottom: '1px solid var(--border)',
@@ -132,7 +185,27 @@ function ProjectRow({ project, index }: { project: typeof projects[0]; index: nu
               letterSpacing: '0.05em', resize: 'none',
             }}
           />
-          <button className="view-btn">POST →</button>
+          <Turnstile
+            siteKey={TURNSTILE_SITE_KEY}
+            onSuccess={(t) => setToken(t)}
+            onError={() => {
+              setToken(null)
+              setTurnstileError(true)
+            }}
+            onExpire={() => setToken(null)}
+            options={{
+              theme: 'dark',
+              retry: 'auto',
+              'retry-interval': 8000,
+              'refresh-expired': 'auto',
+            }}
+          />
+          {turnstileError && (
+            <p style={{ fontSize: '11px', opacity: 0.5, letterSpacing: '0.1em' }}>
+              Verification failed. Try disabling tracking prevention or use Chrome.
+            </p>
+          )}
+          <button className="view-btn" onClick={handleCommentSubmit}>POST →</button>
         </div>
       </div>
       <div ref={textRef} className="text-column">

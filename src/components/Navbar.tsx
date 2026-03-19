@@ -11,20 +11,48 @@ const NAV_LINKS = ['works', 'about', 'contact'] as const
 type NavLink = typeof NAV_LINKS[number]
 
 function ThemeToggle({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) {
+  const iconRef = useRef<HTMLSpanElement>(null)
+
+  const handleToggle = () => {
+    const overlay = document.createElement('div')
+    overlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: var(--fg);
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+    `
+    document.body.appendChild(overlay)
+    gsap.timeline()
+      .to(overlay, { opacity: 0.08, duration: 0.15, ease: 'power2.in' })
+      .to(overlay, { opacity: 0, duration: 0.4, ease: 'power2.out', onComplete: () => overlay.remove() })
+
+    if (iconRef.current) {
+      gsap.fromTo(iconRef.current,
+        { rotation: 0, scale: 0.5, opacity: 0 },
+        { rotation: 360, scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
+      )
+    }
+    onToggle()
+  }
+
   return (
-    <button onClick={onToggle} style={{
-      width: '40px', height: '22px', borderRadius: '11px',
-      border: '1px solid var(--fg)', position: 'relative',
-      transition: 'background 0.3s', flexShrink: 0,
-      background: isDark ? 'transparent' : 'var(--fg)',
-    }}>
-      <span style={{
-        position: 'absolute', top: '3px',
-        left: isDark ? '3px' : 'calc(100% - 19px)',
-        width: '14px', height: '14px', borderRadius: '50%',
-        background: isDark ? 'var(--fg)' : 'var(--bg)',
-        transition: 'left 0.3s',
-      }} />
+    <button
+      onClick={handleToggle}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: 'var(--fg)', fontFamily: 'var(--font-body)',
+        fontSize: '20px', letterSpacing: '0.18em', textTransform: 'uppercase',
+        opacity: 0.6, transition: 'opacity 0.2s',
+        display: 'flex', alignItems: 'center', gap: '6px', padding: 0,
+      }}
+      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+      onMouseLeave={e => (e.currentTarget.style.opacity = '0.6')}
+    >
+      <span ref={iconRef} style={{ display: 'inline-block' }}>
+        {isDark ? '☀' : '☾'}
+      </span>
     </button>
   )
 }

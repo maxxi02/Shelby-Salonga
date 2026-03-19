@@ -5,6 +5,7 @@
   margin: 0;
   padding: 0;
   max-width: 100%;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease !important;
 }
 
 :root {

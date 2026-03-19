@@ -1,26 +1,10 @@
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useRef } from 'react'
 import sukunaGif from '../assets/sukuna-gif-1.gif'
 import SEO from '../components/SEO'
-
-gsap.registerPlugin(ScrollTrigger)
+import AboutImage from '../components/AboutImage'
+import { useSectionReveal } from '../hooks/useSectionReveal'
 
 const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")`
-
-function useSectionReveal(ref: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    if (!ref.current) return
-    const els = ref.current.querySelectorAll('.sr')
-    gsap.fromTo(els,
-      { opacity: 0, y: 48 },
-      {
-        opacity: 1, y: 0, duration: 0.9, stagger: 0.12, ease: 'power3.out',
-        scrollTrigger: { trigger: ref.current, start: 'top 78%' },
-      }
-    )
-  }, [ref])
-}
 
 interface SectionProps {
   children: React.ReactNode
@@ -39,26 +23,6 @@ function Section({ children, first }: SectionProps) {
         {children}
       </div>
     </section>
-  )
-}
-
-function AboutImage({ src, rotate }: { src: string; rotate: string }) {
-  return (
-    <div className="sr" style={{ overflow: 'hidden' }}>
-      <img
-        src={src}
-        alt=""
-        style={{
-          width: '100%', display: 'block',
-          filter: 'none',
-          transform: `rotate(${rotate})`,
-          transformOrigin: 'center',
-          transition: 'transform 0.6s ease',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.transform = 'rotate(0deg) scale(1.02)')}
-        onMouseLeave={e => (e.currentTarget.style.transform = `rotate(${rotate}) scale(1)`)}
-      />
-    </div>
   )
 }
 

@@ -1,25 +1,42 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Turnstile } from '@marsidev/react-turnstile'
+import SEO from '../components/SEO'
+import { sendContactForm } from '../lib/api'
 
-gsap.registerPlugin(ScrollTrigger)
+const TURNSTILE_SITE_KEY = import.meta.env.DEV
+  ? '1x00000000000000000000AA'
+  : import.meta.env.VITE_TURNSTILE_SITE_KEY
 
 export default function ContactPage() {
   const sectionRef = useRef<HTMLElement>(null)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', timeline: '', message: '' })
+  const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    const els = sectionRef.current?.querySelectorAll('.reveal')
+    const els = sectionRef.current?.querySelectorAll('.sr')
     if (!els) return
     gsap.fromTo(els,
-      { opacity: 0, y: 60 },
-      { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out', delay: 0.3 }
+      { opacity: 0, y: 48 },
+      { opacity: 1, y: 0, duration: 0.9, stagger: 0.12, ease: 'power3.out' }
     )
   }, [])
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setSent(true)
+    setLoading(true)
+    setError('')
+    try {
+      await sendContactForm(form, token!)
+      setSent(true)
+    } catch {
+      setError('Failed to send. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -27,11 +44,17 @@ export default function ContactPage() {
     border: 'none', borderBottom: '1px solid var(--border)',
     color: 'var(--fg)', fontFamily: 'var(--font-body)',
     fontSize: '13px', padding: '16px 0', outline: 'none',
-    letterSpacing: '0.05em',
+    letterSpacing: '0.05em', boxSizing: 'border-box',
   }
 
   return (
     <>
+      <SEO
+        title="Contact — Shelby Salonga"
+        description="Get in touch with Shelby Salonga — Creative Developer & Designer based in Manila, PH. Available for work."
+        url="https://rojanns.vercel.app/contact"
+      />
+
       {/* Noise overlay */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
@@ -39,84 +62,93 @@ export default function ContactPage() {
         backgroundSize: '300px 300px',
       }} />
 
-      <section id="contact-top" ref={sectionRef} className="section" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="container">
+      <section id="contact-top" ref={sectionRef} style={{ position: 'relative', zIndex: 1, paddingTop: '160px', paddingBottom: '8rem' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
 
-          {/* Big heading */}
-          <div className="reveal" style={{ paddingTop: '40px', paddingBottom: '80px', borderBottom: '1px solid var(--border)' }}>
+          {/* Heading */}
+          <div className="sr" style={{ marginBottom: '0.5rem' }}>
             <h1 style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(5rem, 12vw, 14rem)',
-              lineHeight: 0.9, letterSpacing: '-0.02em',
+              fontSize: 'clamp(3rem, 8vw, 8rem)',
+              letterSpacing: '0.02em', lineHeight: 0.95,
             }}>
-              CONTACT
+              GET IN TOUCH
             </h1>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start', paddingTop: '80px' }}>
-            {/* Left: info */}
-            <div>
-              <p className="reveal" style={{ fontSize: '13px', lineHeight: 1.9, opacity: 0.7, marginBottom: '48px', maxWidth: '360px' }}>
-                Have a project in mind? Let's talk. I'm always open to discussing new opportunities, creative collaborations, or just a good conversation about design.
-              </p>
-              <div className="reveal" style={{ marginBottom: '24px' }}>
-                <p className="section-label" style={{ marginBottom: '8px' }}>Email</p>
-                <a href="mailto:hello@shelbysalonga.com" style={{ fontFamily: 'var(--font-display)', fontSize: '22px', letterSpacing: '0.05em' }}>
-                  HELLO@SHELBYSALONGA.COM
-                </a>
-              </div>
-              <div className="reveal">
-                <p className="section-label" style={{ marginBottom: '12px' }}>Socials</p>
-                <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-                  {['Instagram', 'LinkedIn', 'Dribbble', 'GitHub'].map(s => (
-                    <a key={s} href="#" style={{ fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.6, transition: 'opacity 0.2s' }}
-                      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                      onMouseLeave={e => (e.currentTarget.style.opacity = '0.6')}
-                    >{s}</a>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <p className="sr section-label" style={{ marginBottom: '5rem' }}>[ AVAILABLE FOR WORK ]</p>
 
-            {/* Right: form */}
-            <div className="reveal">
-              {sent ? (
-                <div style={{ padding: '60px 0' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '40px', letterSpacing: '0.05em' }}>MESSAGE SENT ✓</p>
-                  <p style={{ fontSize: '13px', opacity: 0.6, marginTop: '16px' }}>I'll get back to you within 24 hours.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <input required placeholder="Your Name" style={inputStyle} />
-                  <input required type="email" placeholder="Email Address" style={inputStyle} />
-                  <input placeholder="Subject" style={inputStyle} />
-                  <textarea required placeholder="Your Message" rows={5} style={{ ...inputStyle, resize: 'none', marginTop: '8px' }} />
-                  <button type="submit" style={{
-                    marginTop: '32px', padding: '18px 48px',
-                    border: '1px solid var(--fg)', background: 'transparent',
-                    color: 'var(--fg)', fontFamily: 'var(--font-body)',
-                    fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase',
-                    cursor: 'pointer', alignSelf: 'flex-start',
-                    transition: 'background 0.3s, color 0.3s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--fg)'; e.currentTarget.style.color = 'var(--bg)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--fg)' }}
-                  >
-                    Send Message
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
+          {sent ? (
+            <p className="sr" style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(2rem, 5vw, 4rem)',
+              letterSpacing: '0.02em', opacity: 0.85,
+            }}>
+              MESSAGE SENT →
+            </p>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0', maxWidth: '640px' }}>
+              <input
+                className="sr"
+                required
+                placeholder="Name"
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                style={inputStyle}
+              />
+              <input
+                className="sr"
+                required
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                style={inputStyle}
+              />
+              <input
+                className="sr"
+                required
+                placeholder="Timeline — e.g. 2 weeks, 1 month"
+                value={form.timeline}
+                onChange={e => setForm(f => ({ ...f, timeline: e.target.value }))}
+                style={inputStyle}
+              />
+              <textarea
+                className="sr"
+                required
+                placeholder="Message"
+                rows={4}
+                value={form.message}
+                onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                style={{ ...inputStyle, resize: 'none' }}
+              />
+              <div className="sr" style={{ marginTop: '2.5rem' }}>
+                <Turnstile
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onSuccess={(t) => setToken(t)}
+                  onError={() => setToken(null)}
+                  onExpire={() => setToken(null)}
+                  options={{ theme: 'dark' }}
+                />
+                <button
+                  type="submit"
+                  className="view-btn"
+                  disabled={!token || loading}
+                  style={{ opacity: token ? 1 : 0.4, cursor: token ? 'pointer' : 'not-allowed', marginTop: '1rem' }}
+                >
+                  {loading ? 'SENDING...' : 'SEND MESSAGE →'}
+                </button>
+                {error && (
+                  <p style={{ marginTop: '12px', fontSize: '12px', color: '#e05555', letterSpacing: '0.05em' }}>
+                    {error}
+                  </p>
+                )}
+              </div>
+            </form>
+          )}
 
         </div>
       </section>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .contact-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
-        }
-      `}</style>
     </>
   )
 }
