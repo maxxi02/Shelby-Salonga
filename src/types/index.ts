@@ -5,5 +5,7 @@ export interface Project {
   tags: string
   desc: string
   img: string
+  video?: string
   link?: string
+  liveUrl?: string
 }

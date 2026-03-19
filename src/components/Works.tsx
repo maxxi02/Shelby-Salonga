@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import project1adVideo from '../assets/project1-ad.mp4'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -19,7 +20,9 @@ const projects: Project[] = [
     tags: 'REACT · VITE · TAILWIND · GSAP · LENIS',
     desc: 'Full artisan bakery landing page — editorial layout with scroll-driven GSAP animations, Lenis smooth scroll, real food photography, and a warm cream/terracotta design system.',
     img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80',
+    video: project1adVideo,
     link: 'https://github.com/maxxi02/sample-project--1-sweetgrain',
+    liveUrl: 'https://sample-project-1-sweetgrain.vercel.app/',
   },
 ]
 
@@ -108,14 +111,32 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
   return (
     <div ref={rowRef} className={`project-row${isReverse ? ' reverse' : ''}`}>
       <div ref={imgRef} className="image-column" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ overflow: 'hidden', aspectRatio: '4/3' }}>
-          <img
-            src={project.img}
-            alt={project.title}
-            style={{ flex: 1 }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.04)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-          />
+        <div style={{ overflow: 'hidden', aspectRatio: '16/9', borderRadius: '4px' }}>
+          {project.video ? (
+            <video
+              src={project.video}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', display: 'block' }}
+              onError={e => {
+                const v = e.currentTarget
+                const img = document.createElement('img')
+                img.src = project.img
+                img.alt = project.title
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;'
+                v.replaceWith(img)
+              }}
+            />
+          ) : (
+            <img
+              src={project.img}
+              alt={project.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          )}
         </div>
         {/* Divider */}
         <div style={{ borderTop: '1px solid var(--border)', marginTop: '1rem' }} />
@@ -205,7 +226,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         <p style={{ fontSize: '13px', lineHeight: 1.85, opacity: 0.65, marginBottom: '2rem', maxWidth: '420px' }}>
           {project.desc}
         </p>
-        <a href={project.link ?? '#'} target="_blank" rel="noopener noreferrer" className="view-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>View Project →</a>
+        <a href={project.liveUrl ?? project.link ?? '#'} target="_blank" rel="noopener noreferrer" className="view-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>View Project →</a>
       </div>
     </div>
   )
