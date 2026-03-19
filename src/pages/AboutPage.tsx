@@ -1,7 +1,7 @@
 import { useRef } from 'react'
-import sukunaGif from '../assets/sukuna-gif-1.gif'
+import aboutImage1 from '../assets/miyamoto-about-image-1.png'
+import aboutImage2 from '../assets/miyamoto-about-image-2.png'
 import SEO from '../components/SEO'
-import AboutImage from '../components/AboutImage'
 import { useSectionReveal } from '../hooks/useSectionReveal'
 
 const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")`
@@ -15,11 +15,8 @@ function Section({ children, first }: SectionProps) {
   const ref = useRef<HTMLElement>(null)
   useSectionReveal(ref)
   return (
-    <section id="about-top" ref={ref} style={{
-      padding: first ? '160px 0 6rem' : '6rem 0',
-      position: 'relative', zIndex: 1,
-    }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
+    <section id="about-top" ref={ref} className={first ? 'about-section about-section--first' : 'about-section'} style={{ position: 'relative', zIndex: 1 }}>
+      <div className="about-container">
         {children}
       </div>
     </section>
@@ -42,7 +39,7 @@ export default function AboutPage() {
 
       {/* ── Section 1 — What I Do ── */}
       <Section first>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6rem', alignItems: 'start' }}>
+        <div className="about-intro-grid">
           {/* Left — label → text → image */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <p className="section-label sr">WHAT I DO</p>
@@ -52,12 +49,12 @@ export default function AboutPage() {
             <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
               I am also passionate about open source and helping other developers build better products.
             </p>
-            <img src={sukunaGif} alt="sukuna" style={{ width: '100%', display: 'block' }} />
+            <img src={aboutImage1} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
 
           {/* Right — image → label → text */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <AboutImage src="https://picsum.photos/500/600?random=11" rotate="-2deg" />
+            <img src={aboutImage2} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
             <p className="section-label sr">BEFORE THIS...</p>
             <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
               I was a Software Engineer Intern at Solar Works (2025–2026) where I built a role-based POS system using Next.js, TypeScript, MongoDB, and serverless architecture. I implemented real-time features with Socket.IO, secure authentication, and a responsive UI with shadcn/ui.
@@ -94,7 +91,9 @@ export default function AboutPage() {
           </div>
 
           {/* Right — image */}
-          <AboutImage src="https://picsum.photos/500/600?random=12" rotate="2deg" />
+          <div>
+            <img src={aboutImage2} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+          </div>
         </div>
       </Section>
 
@@ -132,6 +131,17 @@ export default function AboutPage() {
       </Section>
 
       <style>{`
+        .about-section { padding: 6rem 0; }
+        .about-section--first { padding: 160px 0 6rem; }
+        .about-container { max-width: 1400px; margin: 0 auto; padding: 0 40px; }
+
+        .about-intro-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 4rem;
+          align-items: start;
+        }
+
         .about-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -142,6 +152,15 @@ export default function AboutPage() {
         .about-grid--reverse > *:last-child  { order: 0; }
 
         @media (max-width: 768px) {
+          .about-section--first { padding: 100px 0 3rem; }
+          .about-section { padding: 3rem 0; }
+          .about-container { padding: 0 20px; }
+
+          .about-intro-grid {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+          }
+
           .about-grid {
             grid-template-columns: 1fr;
             gap: 3rem;

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import SEO from './SEO'
+import myPhoto from '../assets/miyamoto-hero-section-img-removebg-preview.png'
 
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null)
@@ -106,8 +107,26 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Right — empty */}
-            <div className="hero-right-empty" />
+            {/* Right — photo */}
+            <div className="hero-right-empty" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
+              <div className="hero-line" style={{ overflow: 'hidden', width: '100%', maxWidth: '480px' }}>
+                <img
+                  src={myPhoto}
+                  alt="Shelby Salonga"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '70vh',
+                    objectFit: 'cover',
+                    objectPosition: 'top',
+                    display: 'block',
+                    filter: 'grayscale(100%)',
+                    transform: 'rotate(1.5deg)',
+                    transformOrigin: 'center',
+                  }}
+                />
+              </div>
+            </div>
 
           </div>
         </div>
