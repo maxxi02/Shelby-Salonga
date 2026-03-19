@@ -196,9 +196,9 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
             options={{
               theme: 'dark',
               retry: 'auto',
-              'retry-interval': 8000,
-              'refresh-expired': 'auto',
-            }}
+              retryInterval: 8000,
+              refreshExpired: 'auto',
+            } as any}
           />
           {turnstileError && (
             <p style={{ fontSize: '11px', opacity: 0.5, letterSpacing: '0.1em' }}>
