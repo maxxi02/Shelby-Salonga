@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import project1adVideo from '../assets/project1-ad.mp4'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { gsap } from 'gsap'
@@ -24,13 +25,126 @@ const projects: Project[] = [
     link: 'https://github.com/maxxi02/sample-project--1-sweetgrain',
     liveUrl: 'https://sample-project-1-sweetgrain.vercel.app/',
   },
+  {
+    num: '02', title: 'RENDEZVOUS CAFE', year: '2025',
+    tags: 'RENDEZVOUS CAFE · RENDEZVOUS POS SYSTEMS',
+    desc: 'A cozy café web experience paired with a full-featured POS system — seamlessly blending warm hospitality aesthetics with practical point-of-sale functionality for modern café operations.',
+    img: '/project2.png',
+    liveUrl: 'https://rendezvous-cafe.vercel.app/',
+  },
 ]
 
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+interface LightboxProps {
+  project: Project
+  triggerRect: DOMRect
+  onClose: () => void
+}
+
+function Lightbox({ project, triggerRect, onClose }: LightboxProps) {
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const mediaRef = useRef<HTMLDivElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const targetW = Math.min(vw * 0.9, (vh * 0.85) * (16 / 9))
+  const targetH = targetW * (9 / 16)
+  const targetX = (vw - targetW) / 2
+  const targetY = (vh - targetH) / 2
+
+  const close = () => {
+    const scaleX = triggerRect.width / targetW
+    const scaleY = triggerRect.height / targetH
+    const toX = triggerRect.left - targetX
+    const toY = triggerRect.top - targetY
+    gsap.to(backdropRef.current, { opacity: 0, duration: 0.4, ease: 'power3.inOut' })
+    gsap.to(closeRef.current, { opacity: 0, duration: 0.15 })
+    gsap.to(mediaRef.current, {
+      x: toX, y: toY, scaleX, scaleY, duration: 0.45, ease: 'power3.inOut',
+      onComplete: () => { document.body.style.overflow = ''; onClose() },
+    })
+  }
+
+  useEffect(() => {
+    const scaleX = triggerRect.width / targetW
+    const scaleY = triggerRect.height / targetH
+    const fromX = triggerRect.left - targetX
+    const fromY = triggerRect.top - targetY
+
+    document.body.style.overflow = 'hidden'
+    gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 0.85, duration: 0.5, ease: 'power3.inOut' })
+    gsap.fromTo(mediaRef.current,
+      { x: fromX, y: fromY, scaleX, scaleY },
+      { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.5, ease: 'power3.inOut' }
+    )
+    gsap.fromTo(closeRef.current, { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.35 })
+
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  return createPortal(
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+      <div
+        ref={backdropRef}
+        onClick={close}
+        style={{ position: 'absolute', inset: 0, background: '#000', opacity: 0 }}
+      />
+      <div
+        ref={mediaRef}
+        style={{
+          position: 'absolute',
+          left: targetX, top: targetY,
+          width: targetW, height: targetH,
+          transformOrigin: 'top left',
+          borderRadius: '4px',
+          overflow: 'hidden',
+        }}
+      >
+        {project.video ? (
+          <video
+            src={project.video}
+            autoPlay loop muted playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        ) : (
+          <img
+            src={project.img}
+            alt={project.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        )}
+      </div>
+      <button
+        ref={closeRef}
+        onClick={close}
+        style={{
+          position: 'absolute',
+          top: targetY - 44,
+          left: targetX + targetW - 36,
+          background: 'none', border: '1px solid var(--fg)',
+          color: 'var(--fg)', width: 36, height: 36,
+          cursor: 'pointer', fontSize: '18px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: 0,
+        }}
+      >×</button>
+    </div>,
+    document.body
+  )
+}
+
+// ── ProjectRow ────────────────────────────────────────────────────────────────
 function ProjectRow({ project, index }: { project: Project; index: number }) {
   const rowRef = useRef<HTMLDivElement>(null)
   const imgRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
+  const mediaWrapRef = useRef<HTMLDivElement>(null)
   const isReverse = index % 2 === 1
+
+  const [lightboxRect, setLightboxRect] = useState<DOMRect | null>(null)
 
   useEffect(() => {
     if (!imgRef.current || !textRef.current) return
@@ -46,9 +160,13 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
     )
   }, [isReverse])
 
+  const openLightbox = () => {
+    if (!mediaWrapRef.current) return
+    setLightboxRect(mediaWrapRef.current.getBoundingClientRect())
+  }
+
   const [open, setOpen] = useState(false)
   const [hasReacted, setHasReacted] = useState(false)
-  const [fireCount, setFireCount] = useState<number | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [turnstileError, setTurnstileError] = useState(false)
   const [commentText, setCommentText] = useState('')
@@ -64,15 +182,13 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
     queryFn: () => getComments(project.num),
   })
 
-  useEffect(() => {
-    if (reactionsData?.fire_count !== undefined) setFireCount(reactionsData.fire_count)
-    if (reactionsData?.has_reacted !== undefined) setHasReacted(reactionsData.has_reacted)
-  }, [reactionsData])
+  const fireCount = reactionsData?.fire_count ?? null
+  const hasReactedFromServer = reactionsData?.has_reacted ?? false
+  const isReacted = hasReacted || hasReactedFromServer
 
   const handleReact = async () => {
-    if (hasReacted) return
+    if (isReacted) return
     const data = await incrementReaction(project.num)
-    if (data.fire_count !== undefined) setFireCount(data.fire_count)
     if (!data.already_reacted) setHasReacted(true)
   }
 
@@ -109,126 +225,135 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
   }
 
   return (
-    <div ref={rowRef} className={`project-row${isReverse ? ' reverse' : ''}`}>
-      <div ref={imgRef} className="image-column" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ overflow: 'hidden', aspectRatio: '16/9', borderRadius: '4px' }}>
-          {project.video ? (
-            <video
-              src={project.video}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', display: 'block' }}
-              onError={e => {
-                const v = e.currentTarget
-                const img = document.createElement('img')
-                img.src = project.img
-                img.alt = project.title
-                img.style.cssText = 'width:100%;height:100%;object-fit:cover;'
-                v.replaceWith(img)
+    <>
+      {lightboxRect && (
+        <Lightbox project={project} triggerRect={lightboxRect} onClose={() => setLightboxRect(null)} />
+      )}
+      <div ref={rowRef} className={`project-row${isReverse ? ' reverse' : ''}`}>
+        <div ref={imgRef} className="image-column" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div
+            ref={mediaWrapRef}
+            onClick={openLightbox}
+            style={{ overflow: 'hidden', aspectRatio: '16/9', borderRadius: '4px', cursor: 'zoom-in', position: 'relative' }}
+          >
+            {project.video ? (
+              <video
+                src={project.video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', display: 'block' }}
+                onError={e => {
+                  const v = e.currentTarget
+                  const img = document.createElement('img')
+                  img.src = project.img
+                  img.alt = project.title
+                  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;'
+                  v.replaceWith(img)
+                }}
+              />
+            ) : (
+              <img
+                src={project.img}
+                alt={project.title}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            )}
+          </div>
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid var(--border)', marginTop: '1rem' }} />
+          {/* Reaction row */}
+          <div style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 0' }}>
+            <button
+              onClick={handleReact}
+              disabled={isReacted}
+              style={{ background: 'none', border: 'none', cursor: isReacted ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
+            >
+              <span style={{
+                fontSize: '1rem',
+                opacity: isReacted ? 1 : 0.45,
+                filter: isReacted ? 'drop-shadow(0 0 4px orange)' : 'none',
+                transition: 'all 0.3s ease',
+              }}>🔥</span>
+              <span style={{ fontSize: '10px', letterSpacing: '0.12em', opacity: isReacted ? 1 : 0.45, transition: 'opacity 0.3s ease' }}>{fireCount ?? '...'}</span>
+            </button>
+            <button onClick={toggleComments} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: open ? 1 : 0.45, transition: 'opacity 0.2s', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = open ? '1' : '0.45')}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span style={{ fontSize: '10px', letterSpacing: '0.12em' }}>{commentCount ?? '...'}</span>
+            </button>
+          </div>
+          {/* Collapsible comments */}
+          <div ref={commentsRef} style={{ display: 'none', flexDirection: 'column', gap: '0.75rem', paddingBottom: '1rem', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {comments.map(({ created_at, text }, i) => (
+                <div key={i} style={{ padding: '0.75rem 0', borderTop: '1px solid var(--border)' }}>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.4, marginBottom: '0.3rem' }}>{new Date(created_at).toLocaleDateString()}</p>
+                  <p style={{ fontSize: '13px', lineHeight: 1.8, opacity: 0.7 }}>{text}</p>
+                </div>
+              ))}
+              <div style={{ borderTop: '1px solid var(--border)' }} />
+            </div>
+            <textarea
+              placeholder="Leave an anonymous comment..."
+              rows={2}
+              value={commentText}
+              onChange={e => setCommentText(e.target.value)}
+              style={{
+                width: '100%', background: 'transparent',
+                border: 'none', borderBottom: '1px solid var(--border)',
+                color: 'var(--fg)', fontFamily: 'var(--font-body)',
+                fontSize: '13px', padding: '12px 0', outline: 'none',
+                letterSpacing: '0.05em', resize: 'none',
               }}
             />
-          ) : (
-            <img
-              src={project.img}
-              alt={project.title}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            <Turnstile
+              siteKey={TURNSTILE_SITE_KEY}
+              onSuccess={(t) => setToken(t)}
+              onError={() => {
+                setToken(null)
+                setTurnstileError(true)
+              }}
+              onExpire={() => setToken(null)}
+              options={{
+                theme: 'dark',
+                retry: 'auto',
+                retryInterval: 8000,
+                refreshExpired: 'auto',
+              } as any}
             />
-          )}
-        </div>
-        {/* Divider */}
-        <div style={{ borderTop: '1px solid var(--border)', marginTop: '1rem' }} />
-        {/* Reaction row */}
-        <div style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 0' }}>
-          <button
-            onClick={handleReact}
-            disabled={hasReacted}
-            style={{ background: 'none', border: 'none', cursor: hasReacted ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
-          >
-            <span style={{
-              fontSize: '1rem',
-              opacity: hasReacted ? 1 : 0.45,
-              filter: hasReacted ? 'drop-shadow(0 0 4px orange)' : 'none',
-              transition: 'all 0.3s ease',
-            }}>🔥</span>
-            <span style={{ fontSize: '10px', letterSpacing: '0.12em', opacity: hasReacted ? 1 : 0.45, transition: 'opacity 0.3s ease' }}>{fireCount ?? '...'}</span>
-          </button>
-          <button onClick={toggleComments} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: open ? 1 : 0.45, transition: 'opacity 0.2s', padding: 0, color: 'var(--fg)', fontFamily: 'var(--font-body)' }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = open ? '1' : '0.45')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            <span style={{ fontSize: '10px', letterSpacing: '0.12em' }}>{commentCount ?? '...'}</span>
-          </button>
-        </div>
-        {/* Collapsible comments */}
-        <div ref={commentsRef} style={{ display: 'none', flexDirection: 'column', gap: '0.75rem', paddingBottom: '1rem', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {comments.map(({ created_at, text }, i) => (
-              <div key={i} style={{ padding: '0.75rem 0', borderTop: '1px solid var(--border)' }}>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.4, marginBottom: '0.3rem' }}>{new Date(created_at).toLocaleDateString()}</p>
-                <p style={{ fontSize: '13px', lineHeight: 1.8, opacity: 0.7 }}>{text}</p>
-              </div>
-            ))}
-            <div style={{ borderTop: '1px solid var(--border)' }} />
+            {turnstileError && (
+              <p style={{ fontSize: '11px', opacity: 0.5, letterSpacing: '0.1em' }}>
+                Verification failed. Try disabling tracking prevention or use Chrome.
+              </p>
+            )}
+            <button className="view-btn" onClick={handleCommentSubmit}>POST →</button>
           </div>
-          <textarea
-            placeholder="Leave an anonymous comment..."
-            rows={2}
-            value={commentText}
-            onChange={e => setCommentText(e.target.value)}
-            style={{
-              width: '100%', background: 'transparent',
-              border: 'none', borderBottom: '1px solid var(--border)',
-              color: 'var(--fg)', fontFamily: 'var(--font-body)',
-              fontSize: '13px', padding: '12px 0', outline: 'none',
-              letterSpacing: '0.05em', resize: 'none',
-            }}
-          />
-          <Turnstile
-            siteKey={TURNSTILE_SITE_KEY}
-            onSuccess={(t) => setToken(t)}
-            onError={() => {
-              setToken(null)
-              setTurnstileError(true)
-            }}
-            onExpire={() => setToken(null)}
-            options={{
-              theme: 'dark',
-              retry: 'auto',
-              retryInterval: 8000,
-              refreshExpired: 'auto',
-            } as any}
-          />
-          {turnstileError && (
-            <p style={{ fontSize: '11px', opacity: 0.5, letterSpacing: '0.1em' }}>
-              Verification failed. Try disabling tracking prevention or use Chrome.
-            </p>
-          )}
-          <button className="view-btn" onClick={handleCommentSubmit}>POST →</button>
+        </div>
+        <div ref={textRef} className="text-column">
+          <p className="section-label" style={{ marginBottom: '0.5rem' }}>{project.num} — {project.year}</p>
+          <h3 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'clamp(40px, 5vw, 72px)',
+            letterSpacing: '0.02em', lineHeight: 0.95, marginBottom: '0.75rem',
+          }}>{project.title}</h3>
+          <p style={{
+            fontFamily: 'var(--font-body)', fontSize: '10px',
+            letterSpacing: '0.2em', opacity: 0.45, marginBottom: '1.25rem',
+          }}>{project.tags}</p>
+          <p style={{ fontSize: '13px', lineHeight: 1.85, opacity: 0.65, marginBottom: '2rem', maxWidth: '420px' }}>
+            {project.desc}
+          </p>
+          <a href={project.liveUrl ?? project.link ?? '#'} target="_blank" rel="noopener noreferrer" className="view-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>View Project →</a>
         </div>
       </div>
-      <div ref={textRef} className="text-column">
-        <p className="section-label" style={{ marginBottom: '0.5rem' }}>{project.num} — {project.year}</p>
-        <h3 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'clamp(40px, 5vw, 72px)',
-          letterSpacing: '0.02em', lineHeight: 0.95, marginBottom: '0.75rem',
-        }}>{project.title}</h3>
-        <p style={{
-          fontFamily: 'var(--font-body)', fontSize: '10px',
-          letterSpacing: '0.2em', opacity: 0.45, marginBottom: '1.25rem',
-        }}>{project.tags}</p>
-        <p style={{ fontSize: '13px', lineHeight: 1.85, opacity: 0.65, marginBottom: '2rem', maxWidth: '420px' }}>
-          {project.desc}
-        </p>
-        <a href={project.liveUrl ?? project.link ?? '#'} target="_blank" rel="noopener noreferrer" className="view-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>View Project →</a>
-      </div>
-    </div>
+    </>
   )
 }
 
@@ -265,15 +390,14 @@ export default function Works() {
           align-items: center;
           gap: 0;
           padding: 6rem 0;
-          border-top: 1px solid var(--border);
         }
 
         .project-row.reverse {
-          grid-template-columns: 40% 60%;
+          grid-template-columns: 60% 40%;
         }
 
         .project-row.reverse .image-column { order: 2; }
-        .project-row.reverse .text-column  { order: 1; }
+        .project-row.reverse .text-column  { order: 1; padding: 0 4rem 0 0; }
 
         .image-column {
           display: flex;
@@ -340,9 +464,9 @@ export default function Works() {
             }}>
               MY WORKS
             </h2>
-            <span className="section-label">[ 01 PROJECT ]</span>
+            <span className="section-label">[ 02 PROJECTS ]</span>
           </div>
-          <div style={{ maxWidth: '860px' }}>
+          <div>
             {projects.map((p, i) => <ProjectRow key={p.num} project={p} index={i} />)}
           </div>
           <p style={{

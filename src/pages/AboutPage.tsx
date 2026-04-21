@@ -43,24 +43,24 @@ export default function AboutPage() {
           {/* Left — label → text → image */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <p className="section-label sr">WHAT I DO</p>
-            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
-              I am a Creative Developer &amp; Designer based in Manila, PH. I build precise, beautiful digital experiences at the intersection of design and code. I specialize in React, TypeScript, and Node.js.
+            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7, maxWidth: '520px' }}>
+              I am a Full-stack Developer based in Batangas, PH. I build scalable web and mobile applications across React, Node.js, Flutter, FastAPI, and PostgreSQL — focused on clean architecture, end-to-end implementation, and delivering user-friendly digital solutions.
             </p>
-            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
-              I am also passionate about open source and helping other developers build better products.
+            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7, maxWidth: '520px' }}>
+              I leverage AI-assisted development tools like Claude, Amazon Q, and GitHub Copilot to ship faster without compromising code quality.
             </p>
-            <img src={aboutImage1} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src={aboutImage1} alt="Shelby Salonga — developer portrait" style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
 
           {/* Right — image → label → text */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <img src={aboutImage2} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src={aboutImage2} alt="Shelby Salonga — workspace" style={{ width: '100%', height: 'auto', display: 'block' }} />
             <p className="section-label sr">BEFORE THIS...</p>
-            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
-              I was a Software Engineer Intern at Solar Works (2025–2026) where I built a role-based POS system using Next.js, TypeScript, MongoDB, and serverless architecture. I implemented real-time features with Socket.IO, secure authentication, and a responsive UI with shadcn/ui.
+            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7, maxWidth: '520px' }}>
+              I was a Software Engineer Intern at Solar Works (Jan–Apr 2026) where I built a role-based POS system using Next.js, TypeScript, MongoDB, and serverless architecture — with real-time features via Socket.IO, secure authentication, and a responsive UI with shadcn/ui.
             </p>
-            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7 }}>
-              Before that, I worked as a Freelance Full-stack Developer (2024–2025) building end-to-end web applications using React, Node.js, MongoDB, and TypeScript — including secure JWT-based authentication, RESTful APIs, and real-time features with WebSocket.
+            <p className="sr" style={{ fontSize: '13px', lineHeight: 1.95, opacity: 0.7, maxWidth: '520px' }}>
+              Before that, I worked as a Freelance Full-stack Developer (Jan 2025–Present) building end-to-end applications with React, Node.js, MongoDB, TypeScript, Flutter, FastAPI, and PostgreSQL — including JWT authentication, RESTful APIs, WebSocket, and CI/CD-driven architectures.
             </p>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
                 'I code side projects.',
                 'I explore design trends.',
                 'I play video games.',
-                'I train like goku to be the GOAT of vibe coding.',
+                'I obsess over clean code and great UX.',
               ].map(line => (
                 <p key={line} className="sr" style={{
                   fontFamily: 'var(--font-display)',
@@ -92,7 +92,7 @@ export default function AboutPage() {
 
           {/* Right — image */}
           <div>
-            <img src={aboutImage2} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            <img src={aboutImage2} alt="Shelby Salonga — workspace" style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
         </div>
       </Section>
@@ -102,8 +102,8 @@ export default function AboutPage() {
         <p className="section-label sr" style={{ marginBottom: '40px' }}>FIND ME ON</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
           {[
-            ['GitHub', 'https://github.com'],
-            ['LinkedIn', 'https://linkedin.com'],
+            ['GitHub', 'https://github.com/maxxi02'],
+            ['LinkedIn', 'https://linkedin.com/in/rojannotorio6'],
           ].map(([label, href]) => (
             <a
               key={label}
