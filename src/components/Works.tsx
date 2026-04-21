@@ -32,6 +32,13 @@ const projects: Project[] = [
     img: '/project2.png',
     liveUrl: 'https://rendezvous-cafe.vercel.app/',
   },
+  {
+    num: '03', title: 'GIRLIES BIRTHING HOME', year: '2025',
+    tags: 'CLINIC · IMS · WEB APPLICATION',
+    desc: 'A full-featured Information Management System for Girlies Birthing Home — a clinic web platform designed to streamline patient records, appointments, and administrative operations for a modern birthing facility.',
+    img: '/project3.png',
+    liveUrl: 'https://girlies-birthing-client.vercel.app',
+  },
 ]
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
@@ -464,7 +471,7 @@ export default function Works() {
             }}>
               MY WORKS
             </h2>
-            <span className="section-label">[ 02 PROJECTS ]</span>
+            <span className="section-label">[ 03 PROJECTS ]</span>
           </div>
           <div>
             {projects.map((p, i) => <ProjectRow key={p.num} project={p} index={i} />)}
