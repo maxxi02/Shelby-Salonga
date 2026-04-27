@@ -3,129 +3,231 @@ import { gsap } from 'gsap'
 import SEO from './SEO'
 import myPhoto from '../assets/miyamoto-hero-section-img-removebg-preview.png'
 
+
 export default function Hero() {
   const containerRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    const lines = containerRef.current?.querySelectorAll('.hero-line')
-    if (!lines) return
-    gsap.fromTo(lines,
-      { opacity: 0, y: 80, skewY: 3 },
-      { opacity: 1, y: 0, skewY: 0, duration: 1.2, stagger: 0.1, delay: 0.5, ease: 'power4.out' }
-    )
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.hero-name-left',
+        { opacity: 0, x: -60 },
+        { opacity: 1, x: 0, duration: 1.1, delay: 0.4, ease: 'power4.out' }
+      )
+      gsap.fromTo('.hero-name-right',
+        { opacity: 0, x: 60 },
+        { opacity: 1, x: 0, duration: 1.1, delay: 0.4, ease: 'power4.out' }
+      )
+      gsap.fromTo('.hero-card',
+        { opacity: 0, y: 40, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.0, delay: 0.3, ease: 'power3.out' }
+      )
+      gsap.fromTo('.hero-sub',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, delay: 0.8, ease: 'power3.out' }
+      )
+      gsap.fromTo('.hero-hi',
+        { opacity: 0, scale: 0.6 },
+        { opacity: 1, scale: 1, duration: 0.6, delay: 1.0, ease: 'back.out(1.7)' }
+      )
+      gsap.fromTo('.hero-eyebrow',
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.7, delay: 0.5, ease: 'power3.out' }
+      )
+    }, containerRef)
+    return () => ctx.revert()
   }, [])
 
   return (
     <>
       <SEO />
       <style>{`
-        .hero-inner {
+        .hero-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr auto 1fr;
           align-items: center;
-          min-height: 100vh;
-          padding-top: 80px;
-          padding-bottom: 4rem;
+          min-height: 100dvh;
+          gap: 0 clamp(2rem, 3vw, 4rem);
         }
-        .hero-right-empty {
-          display: block;
+        .hero-name-text {
+          font-family: var(--font-display);
+          font-size: clamp(4rem, 8.5vw, 10.5rem);
+          line-height: 0.9;
+          letter-spacing: -0.01em;
+        }
+        .hero-card-wrap {
+          width: clamp(200px, 24vw, 340px);
+          height: clamp(400px, 60vh, 700px);
+          position: relative;
         }
         @media (max-width: 768px) {
-          .hero-inner {
-            grid-template-columns: 1fr;
+          .hero-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            gap: 0;
+            padding: 0;
+            text-align: center;
           }
-          .hero-right-empty {
-            display: none;
+          .hero-card-col { display: none !important; }
+          .hero-name-left {
+            order: 1;
+            align-items: center !important;
+            gap: 0.2rem !important;
+          }
+          .hero-right-col {
+            order: 2;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            margin-top: 0;
+          }
+          .hero-name-text {
+            font-size: clamp(4rem, 22vw, 7rem);
+            text-align: center;
+            line-height: 0.85;
+          }
+          .hero-right-col p {
+            text-align: center !important;
+            max-width: 240px !important;
+            font-size: 13px !important;
+            opacity: 0.5 !important;
+          }
+          .hero-eyebrow {
+            font-size: 10px !important;
+            letter-spacing: 0.25em !important;
+            margin-bottom: 0 !important;
+          }
+          .hero-sub-btn {
+            padding: 12px 28px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 999px !important;
+            opacity: 0.6 !important;
+            font-size: 10px !important;
+            letter-spacing: 0.2em !important;
+            margin-top: 0 !important;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-name-left, .hero-name-right, .hero-card, .hero-sub, .hero-hi, .hero-eyebrow {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
           }
         }
       `}</style>
 
-      <section id="hero" ref={containerRef} style={{
-        position: 'relative', overflow: 'hidden', borderTop: 'none',
-      }}>
-        {/* CSS noise background */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E")`,
-          backgroundSize: '300px 300px',
-        }} />
+      <section id="hero" ref={containerRef} style={{ position: 'relative', overflow: 'hidden' }}>
+        <div className="container">
+          <div className="hero-grid">
 
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="hero-inner">
+            {/* LEFT — name eyebrow + "CREATIVE" */}
+            <div className="hero-name-left" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '0.5rem' }}>
+              <p className="hero-eyebrow" style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '11px',
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                opacity: 0.4,
+                margin: 0,
+              }}>
+                Shelby Salonga
+              </p>
+              <div className="hero-name-text">CREATIVE</div>
+            </div>
 
-            {/* Left — all content */}
-            <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)' }}>
-              <div style={{ overflow: 'hidden' }}>
-                <div className="hero-line" style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(6rem, 11vw, 14rem)',
-                  lineHeight: 0.9, letterSpacing: '-0.02em',
+            {/* CENTER — portrait card */}
+            <div className="hero-card-col hero-card" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div className="hero-card-wrap">
+                {/* Outer bezel */}
+                <div style={{
+                  padding: '6px',
+                  borderRadius: '24px',
+                  border: '1px solid var(--border)',
+                  background: 'color-mix(in srgb, var(--fg) 5%, transparent)',
                 }}>
-                  SHELBY
+                  {/* Inner card */}
+                  <div style={{
+                    borderRadius: '18px',
+                    overflow: 'hidden',
+                    background: 'color-mix(in srgb, var(--fg) 8%, transparent)',
+                    height: '100%',
+                  }}>
+                    <img
+                      src={myPhoto}
+                      alt="Shelby Salonga"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center top',
+                        display: 'block',
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div style={{ overflow: 'hidden' }}>
-                <div className="hero-line" style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(6rem, 11vw, 14rem)',
-                  lineHeight: 0.9, letterSpacing: '-0.02em',
+
+                {/* "Hi" badge — bottom-left overlapping card */}
+                <div className="hero-hi" style={{
+                  position: 'absolute',
+                  bottom: '80px',
+                  left: '-30px',
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'blue',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '18px',
+                  fontWeight: '500',
+                  letterSpacing: '0.05em',
+                  color: 'white',
+                  boxShadow: '0 4px 24px rgba(163,230,53,0.3)',
+                  userSelect: 'none',
                 }}>
-                  SALONGA
+                  Hi
                 </div>
-              </div>
-
-              <div className="hero-line" style={{ borderTop: '1px solid var(--border)', margin: '1.5rem 0' }} />
-
-              <div className="hero-line" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <p style={{ fontSize: '0.75rem', letterSpacing: '0.18em', fontVariant: 'small-caps', textTransform: 'uppercase', opacity: 0.9, margin: 0 }}>
-                  Creative Developer &amp; Designer
-                </p>
-                <p style={{ fontSize: '0.75rem', letterSpacing: '0.08em', opacity: 0.45, margin: 0 }}>
-                  📍 Manila, PH &nbsp;·&nbsp; Available for Work
-                </p>
-                <button
-                  onClick={() => document.getElementById('works')?.scrollIntoView({ behavior: 'smooth' })}
-                  style={{
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    opacity: 0.45,
-                    background: 'none',
-                    border: 'none',
-                    color: 'inherit',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'opacity 0.2s',
-                    marginTop: '0.5rem',
-                    fontFamily: 'var(--font-body)',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0.45')}
-                >
-                  View My Works &nbsp;↓
-                </button>
               </div>
             </div>
 
-            {/* Right — photo */}
-            <div className="hero-right-empty" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
-              <div className="hero-line" style={{ overflow: 'hidden', width: '100%', maxWidth: '480px' }}>
-                <img
-                  src={myPhoto}
-                  alt="Shelby Salonga"
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    maxHeight: '70vh',
-                    objectFit: 'cover',
-                    objectPosition: 'top',
-                    display: 'block',
-                    filter: 'grayscale(100%)',
-                    transform: 'rotate(1.5deg)',
-                    transformOrigin: 'center',
-                  }}
-                />
-              </div>
+            {/* RIGHT — "DEVELOPER" + subtitle + CTA */}
+            <div className="hero-right-col hero-name-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: '0.75rem' }}>
+              <div className="hero-name-text" style={{ textAlign: 'right' }}>DEVELOPER</div>
+              <p className="hero-sub" style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '12px',
+                lineHeight: 1.75,
+                opacity: 0.45,
+                maxWidth: '180px',
+                textAlign: 'right',
+                margin: 0,
+              }}>
+                Manila-based creative developer &amp; designer crafting digital experiences.
+              </p>
+              <button
+                className="hero-sub hero-sub-btn"
+                onClick={() => document.getElementById('works')?.scrollIntoView({ behavior: 'smooth' })}
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '11px',
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  opacity: 0.35,
+                  background: 'none',
+                  border: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s',
+                  padding: 0,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '0.35')}
+              >
+                View Works ↓
+              </button>
             </div>
 
           </div>
